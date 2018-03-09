@@ -240,10 +240,8 @@ module.exports = {
           // "style" loader turns CSS into JS modules that inject <style> tags.
           // In production, we use a plugin to extract that CSS to a file, but
           // in development "style" loader enables hot editing of CSS.
-          // By default we support CSS Modules with the extension .module.css
           {
-            test: /\.css$/,
-            exclude: /\.module\.css$/,
+            test: /\.(css|scss)$/,
             use: [
               require.resolve('style-loader'),
               {
@@ -253,8 +251,34 @@ module.exports = {
                 },
               },
               {
+                loader: require.resolve('sass-loader'),
+                options: {
+                  importLoaders: 1,
+                },
+              },
+              {
                 loader: require.resolve('postcss-loader'),
-                options: postCSSLoaderOptions,
+                options: {
+                  ident: 'postcss', // https://webpack.js.org/guides/migrating/#complex-options
+                  plugins: () => [
+                    require('stylelint'),
+                    require('postcss-reporter')({ clearMessages: true }),
+                    require('postcss-flexbugs-fixes'),
+                    autoprefixer({
+                      browsers: [
+                        'last 2 Chrome versions',
+                        'last 2 ChromeAndroid versions',
+                        'last 2 Firefox versions',
+                        'last 2 Safari versions',
+                        'last 2 Opera versions',
+                        'last 2 Edge versions',
+                        'ios >= 8',
+                        'Android >= 4.4',
+                      ],
+                      flexbox: 'no-2009',
+                    }),
+                  ],
+                },
               },
             ],
           },

@@ -252,31 +252,52 @@ module.exports = {
           // tags. If you use code splitting, however, any async bundles will still
           // use the "style" loader inside the async code so CSS from them won't be
           // in the main CSS file.
-          // By default we support CSS Modules with the extension .module.css
           {
-            test: /\.css$/,
-            exclude: /\.module\.css$/,
+            test: /\.(css|scss)$/,
             loader: ExtractTextPlugin.extract(
               Object.assign(
                 {
-                  fallback: {
-                    loader: require.resolve('style-loader'),
-                    options: {
-                      hmr: false,
-                    },
-                  },
+                  fallback: require.resolve('style-loader'),
                   use: [
                     {
                       loader: require.resolve('css-loader'),
                       options: {
                         importLoaders: 1,
                         minimize: true,
-                        sourceMap: shouldUseSourceMap,
+                        sourceMap: true,
+                      },
+                    },
+                    {
+                      loader: require.resolve('sass-loader'),
+                      options: {
+                        importLoaders: 1,
+                        minimize: true,
+                        sourceMap: true,
                       },
                     },
                     {
                       loader: require.resolve('postcss-loader'),
-                      options: postCSSLoaderOptions,
+                      options: {
+                        ident: 'postcss', // https://webpack.js.org/guides/migrating/#complex-options
+                        plugins: () => [
+                          require('stylelint'),
+                          require('postcss-reporter')({ clearMessages: true }),
+                          require('postcss-flexbugs-fixes'),
+                          autoprefixer({
+                            browsers: [
+                              'last 2 Chrome versions',
+                              'last 2 ChromeAndroid versions',
+                              'last 2 Firefox versions',
+                              'last 2 Safari versions',
+                              'last 2 Opera versions',
+                              'last 2 Edge versions',
+                              'ios >= 8',
+                              'Android >= 4.4',
+                            ],
+                            flexbox: 'no-2009',
+                          }),
+                        ],
+                      },
                     },
                   ],
                 },
@@ -413,7 +434,6 @@ module.exports = {
     // having to parse `index.html`.
     new ManifestPlugin({
       fileName: 'asset-manifest.json',
-      publicPath: publicPath
     }),
     // Generate a service worker script that will precache, and keep up to date,
     // the HTML & assets that are part of the Webpack build.

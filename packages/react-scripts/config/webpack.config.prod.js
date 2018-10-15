@@ -82,10 +82,24 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
         // Necessary for external CSS imports to work
         // https://github.com/facebook/create-react-app/issues/2677
         ident: 'postcss',
+        // --- CUSTOM ORCHARD ---
+        // Configure postcss with proper browser browser support and linting
         plugins: () => [
+          require('stylelint'),
+          require('postcss-reporter')({ clearMessages: true }),
           require('postcss-flexbugs-fixes'),
           require('postcss-preset-env')({
             autoprefixer: {
+              browsers: [
+                'last 2 Chrome versions',
+                'last 2 ChromeAndroid versions',
+                'last 2 Firefox versions',
+                'last 2 Safari versions',
+                'last 2 Opera versions',
+                'last 2 Edge versions',
+                'ios >= 8',
+                'Android >= 4.4',
+              ],
               flexbox: 'no-2009',
             },
             stage: 3,
@@ -320,6 +334,13 @@ module.exports = {
               ]),
               // @remove-on-eject-end
               plugins: [
+                // --- CUSTOM ORCHARD ---
+                // Add support for importing antd components on demand
+                // in order to further reduce build size
+                [
+                  require.resolve('babel-plugin-import'),
+                  { libraryName: 'antd', style: true },
+                ],
                 [
                   require.resolve('babel-plugin-named-asset-import'),
                   {
@@ -476,7 +497,8 @@ module.exports = {
     }),
     // Inlines the webpack runtime script. This script is too small to warrant
     // a network request.
-    shouldInlineRuntimeChunk && new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),
+    shouldInlineRuntimeChunk &&
+      new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">

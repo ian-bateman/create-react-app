@@ -58,10 +58,24 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
         // Necessary for external CSS imports to work
         // https://github.com/facebook/create-react-app/issues/2677
         ident: 'postcss',
+        // --- CUSTOM ORCHARD ---
+        // Configure postcss with proper browser browser support and linting
         plugins: () => [
+          require('stylelint'),
+          require('postcss-reporter')({ clearMessages: true }),
           require('postcss-flexbugs-fixes'),
           require('postcss-preset-env')({
             autoprefixer: {
+              browsers: [
+                'last 2 Chrome versions',
+                'last 2 ChromeAndroid versions',
+                'last 2 Firefox versions',
+                'last 2 Safari versions',
+                'last 2 Opera versions',
+                'last 2 Edge versions',
+                'ios >= 8',
+                'Android >= 4.4',
+              ],
               flexbox: 'no-2009',
             },
             stage: 3,
@@ -244,6 +258,13 @@ module.exports = {
               ]),
               // @remove-on-eject-end
               plugins: [
+                // --- CUSTOM ORCHARD ---
+                // Add support for importing antd components on demand
+                // in order to further reduce build size
+                [
+                  require.resolve('babel-plugin-import'),
+                  { libraryName: 'antd', style: true },
+                ],
                 [
                   require.resolve('babel-plugin-named-asset-import'),
                   {
@@ -342,6 +363,12 @@ module.exports = {
               },
               'sass-loader'
             ),
+          },
+          // --- CUSTOM ORCHARD ---
+          // Add loader to process .graphql files.
+          {
+            test: /\.(graphql)$/,
+            loader: 'graphql-tag/loader',
           },
           // "file" loader makes sure those assets get served by WebpackDevServer.
           // When you `import` an asset, you get its (virtual) filename.
